@@ -1,0 +1,57 @@
+import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
+
+class Bot : TelegramLongPollingBot() {
+    override fun getBotToken(): String = "6016484947:AAEniP-BFOD6bfGlmcgdokRrEBtwpVngAl4"
+    override fun getBotUsername(): String = "MyBot_testForMe_bot"
+
+    override fun onUpdateReceived(update: Update?) {
+        if (update != null) {
+            if (update.hasMessage()) {
+                val message = update!!.message
+                val chatId = message.chatId
+                val responseText = if (message.hasText()) {
+                    var messageText = message.text
+                    when (messageText) {
+                        "/start" -> {
+                            "Категорически приветствуем!"
+                        }
+                        "Жаропонижающее" -> {
+                            "Это препарат для понижения температуры.\n Вот так вот."
+                        }
+                        else -> "Вы ввели: $messageText"
+
+                    }
+                } else {
+                    "Извините, но я понимаю только текст"
+                }
+                sendNotification(chatId, responseText)
+            }
+        }
+    }
+
+    private fun sendNotification(chatId: Long, responseText: String) {
+        val responseMessage = SendMessage(chatId.toString(), responseText)
+        responseMessage.enableMarkdown(true)
+        responseMessage.replyMarkup = getReplyMarkup(
+            listOf(
+                listOf("Жаропонижающее", "Антигистоминное"),
+                listOf("Обезболивающее", "Седативное")
+            )
+        )
+        execute(responseMessage)
+    }
+
+    private fun getReplyMarkup(allButtons: List<List<String>>): ReplyKeyboardMarkup {
+        val markup = ReplyKeyboardMarkup()
+        markup.keyboard = allButtons.map { rowButtons ->
+            val row = KeyboardRow()
+            rowButtons.forEach { rowButton -> row.add(rowButton) }
+            row
+        }
+        return markup
+    }
+}
